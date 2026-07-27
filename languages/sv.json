@@ -1,0 +1,14 @@
+{
+  "Your registration request was denied.": "Din registrering nekades.",
+  "User registration is not available.": "Användarregistrering är inte tillgängligt.",
+  "An user with this email or username already exists.": "En användare med denna e-postadress eller användarnamn finns redan registrerad.",
+  "An unknown error occurred.": "Ett okänt fel inträffade.",
+  "Email": "E-postadress",
+  "Username": "Användarnamn",
+  "Public name that will be shown in your comments. Has to be unique.": "Publikt namn som visas intill dina kommentarer. Behöver vara unikt.",
+  "Create account": "Skapa konto",
+  "With an account you'll be able to:": "Med ett konto har du möjlighet att:",
+  "Comment on videos.": "Kommentera på program.",
+  "Become premium member to watch premium videos.": "Bli medlem och se medlemsprogram.",
+  "Subscribe and get notification when new videos are published.": "Prenumerera och få notifikationer när nya program publiceras."
+}

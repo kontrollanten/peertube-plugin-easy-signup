@@ -1,0 +1,27 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "compilerOptions": {
+		"moduleResolution": "node16", // Tell tsc to look in node_modules for modules
+		"strict": true, // That implies alwaysStrict, noImplicitAny, noImplicitThis
+
+		"alwaysStrict": true, // should already be true because of strict:true
+		"noImplicitAny": true, // should already be true because of strict:true
+		"noImplicitThis": true, // should already be true because of strict:true
+		"noImplicitReturns": true,
+		"strictBindCallApply": true, // should already be true because of strict:true
+		"noUnusedLocals": true,
+		"strictNullChecks": true,
+
+		"removeComments": true,
+		"sourceMap": true,
+
+		"outDir": "../dist/server",
+		"paths": {},
+		"allowJs": true
+	},
+	"include": [
+		"./**/*"
+	],
+	"exclude": [
+	]
+}

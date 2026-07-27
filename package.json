@@ -1,0 +1,68 @@
+{
+  "name": "peertube-plugin-easy-signup",
+  "description": "PeerTube plugin for simplified signup",
+  "version": "1.0.0",
+  "license": "AGPL-3.0",
+  "author": {
+    "name": "kontrollanten",
+    "url": "https://github.com/kontrollanten"
+  },
+  "bugs": "https://github.com/kontrollanten/peertube-plugin-easy-signup/issues",
+  "clientScripts": [
+    {
+      "script": "dist/client/common-client-plugin.js",
+      "scopes": [
+        "common"
+      ]
+    }
+  ],
+  "css": [
+    "dist/assets/style.css"
+  ],
+  "engine": {
+    "peertube": ">=4.2.0"
+  },
+  "homepage": "https://github.com/kontrollanten/peertube-plugin-easy-signup",
+  "keywords": [
+    "peertube",
+    "plugin"
+  ],
+  "library": "./dist/server/main.js",
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "prepare": "npm run build",
+    "check:client:tsc": "npx tsc --p client/tsconfig.json --noEmit",
+    "build:server": "npx tsc --build server/tsconfig.json",
+    "build:client": "node ./scripts/build.mjs",
+    "build:styles": "npx sass --no-source-map assets:dist/assets",
+    "build": "npm-run-all -s clean check:client:tsc -p build:server build:client build:styles",
+    "lint:script": "npx eslint",
+    "lint:styles": "stylelint 'assets/**/*.scss'",
+    "test": "npm-run-all -p lint:script lint:styles"
+  },
+  "staticDirs": {
+    "images": "public/images"
+  },
+  "translations": {
+    "sv-SE": "./languages/sv.json"
+  },
+  "devDependencies": {
+    "@peertube/peertube-types": "^4.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "eslint-config-love": "^113.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "npm-run-all": "^4.1.5",
+    "prettier": "3.9.5",
+    "sass": "^1.54.5",
+    "stylelint": "^16.12.0",
+    "stylelint-config-standard-scss": "^14.0.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@tsconfig/node22": "^22.0.5"
+  }
+}

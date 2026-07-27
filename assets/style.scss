@@ -1,0 +1,18 @@
+.peertube-plugin-easy-signup {
+  justify-self: center;
+
+  input:not([type=submit]) {
+    padding: var(--input-y-padding) var(--input-x-padding);
+    width: 100%;
+    max-width: 100%;
+    color: var(--input-fg);
+    background-color: var(--input-bg);
+    border: var(--input-border-width) solid var(--input-border-color);
+    border-radius: var(--input-border-radius);
+  }
+
+  h2,
+  .text-center {
+    text-align: center;
+  }
+}
