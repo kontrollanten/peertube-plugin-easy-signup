@@ -312,6 +312,7 @@ export const buildForm = async (
 ): Promise<void> => {
   translate = ptTranslate
   const uiBuilder = new UiBuilder(rootEl)
+  const serverConfig = await serverConfigProm
 
   rootEl.classList.add(
     "easy-signup-form",
@@ -429,8 +430,6 @@ export const buildForm = async (
       formErrEl.innerHTML = errMsg
     }
 
-    const serverConfig = await serverConfigProm
-
     form.addEventListener("submit", (event) => {
       event.preventDefault()
 
@@ -523,15 +522,20 @@ export const buildForm = async (
                 uiBuilder.p(
                   await translate("With an account you'll be able to:"),
                 ),
-                uiBuilder.ul([
-                  await translate(
-                    "Become premium member to watch premium videos.",
-                  ),
-                  await translate("Comment on videos."),
-                  await translate(
-                    "Subscribe and get notification when new videos are published.",
-                  ),
-                ]),
+                uiBuilder.ul(
+                  [
+                    serverConfig.plugin.registered.some(
+                      (p) => p.name === "premium-users",
+                    ) &&
+                      (await translate(
+                        "Become premium member to watch premium videos.",
+                      )),
+                    await translate("Comment on videos."),
+                    await translate(
+                      "Subscribe and get notification when new videos are published.",
+                    ),
+                  ].filter((l) => !!l) as string[],
+                ),
               ],
               "col-12 col-md-6 gx-6",
             ),
