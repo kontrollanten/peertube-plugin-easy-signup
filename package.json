@@ -1,7 +1,7 @@
 {
   "name": "peertube-plugin-easy-signup",
   "description": "PeerTube plugin for simplified signup",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "license": "AGPL-3.0",
   "author": {
     "name": "kontrollanten",
