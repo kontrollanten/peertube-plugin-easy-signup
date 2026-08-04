@@ -34,6 +34,18 @@ export default tseslint.config(
             "@typescript-eslint/prefer-destructuring": "off",
             "eslint-comments/require-description": "off",
             "@typescript-eslint/no-loop-func": "off",
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    "args": "all",
+                    "argsIgnorePattern": "^_",
+                    "caughtErrors": "all",
+                    "caughtErrorsIgnorePattern": "^_",
+                    "destructuredArrayIgnorePattern": "^_",
+                    "varsIgnorePattern": "^_",
+                    "ignoreRestSiblings": true
+                }
+            ],
 
             semi: ['error', 'never'], // Enforce no semicolons
             'prettier/prettier': ['error', { semi: false }], // Ensure Prettier also enforces it
