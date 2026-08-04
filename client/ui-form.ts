@@ -437,7 +437,7 @@ export const buildForm = async (
       onSubmit({
         email: inputEmail.value,
         username: inputUsername.value,
-        requiresApproval: serverConfig.signup.requiresApproval as boolean,
+        requiresApproval: serverConfig.signup.requiresApproval,
       })
         .then(async (result) => {
           if (result.success) {
@@ -463,7 +463,16 @@ export const buildForm = async (
             }
 
             if (result.isLoggedIn) {
-              location.reload()
+              const redirectPath = new URLSearchParams(
+                window.location.search,
+              ).get("redirect")
+
+              if (redirectPath) {
+                window.location.href = redirectPath
+              } else {
+                window.location.reload()
+              }
+
               return
             } else {
               showModal({
