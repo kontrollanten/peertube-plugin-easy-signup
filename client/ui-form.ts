@@ -1,6 +1,7 @@
 import { UiBuilder } from "./ui-builder"
+import type { RegisterClientHelpers } from "@peertube/peertube-types/client"
 
-const USER_USERNAME_REGEX_CHARACTERS = "[a-z0-9][a-z0-9._]" // Copied from Peertube
+const USER_USERNAME_REGEX_CHARACTERS = "[a-z0-9_]*([a-z0-9_.\\-]*[a-z0-9_]*)?"
 let clientId: string | null = null
 let clientSecret: string | null = null
 let translate: (str: string) => Promise<string> = async (str: string) =>
@@ -81,9 +82,11 @@ const parseRegistrationResult = async (registration: {
 
 const handleRegistration = async ({
   email,
+  registrationReason,
   username,
 }: {
   email: string
+  registrationReason?: string
   username: string
 }): Promise<
   | { success: true; isPending: boolean; password: string }
@@ -96,6 +99,7 @@ const handleRegistration = async ({
     body: JSON.stringify({
       username,
       email,
+      registrationReason,
       password,
     }),
     headers: {
@@ -135,7 +139,7 @@ const handleRegistration = async ({
         "invalid-params"
       ],
     )
-  } catch (e: unknown) {}
+  } catch (_e: unknown) {}
 
   console.error("Bad response", response)
 
@@ -146,7 +150,7 @@ const handleRegistration = async ({
       response.status === 403
         ? "User registration is not available."
         : response.status === 409
-          ? "An user with this email or username already exists."
+          ? (jsonResponse as { detail: string }).detail
           : "An unknown error occurred.",
     ),
   }
@@ -160,14 +164,14 @@ const handleAuthentication = async ({
   email: string
   username: string
   password: string
-}): Promise<boolean> => {
+}): Promise<{ isAuthenticated: boolean; isEmailVerified?: boolean }> => {
   if (clientId === null || clientSecret === null) {
     console.error("Failed to get client credentials", {
       clientId,
       clientSecret,
     })
 
-    return false
+    return { isAuthenticated: false }
   }
 
   {
@@ -188,6 +192,22 @@ const handleAuthentication = async ({
       },
       body: objectToUrlEncoded(body),
     })
+
+    if (!tokenResponse.ok) {
+      try {
+        const errResponse = (await tokenResponse.json()) as { code?: string }
+
+        return {
+          isAuthenticated: false,
+          isEmailVerified: errResponse.code !== "email_not_verified",
+        }
+      } catch (err) {
+        console.error(err)
+
+        return { isAuthenticated: false }
+      }
+    }
+
     const jsonResponse = (await tokenResponse.json()) as {
       access_token: string
       token_type: string
@@ -215,26 +235,49 @@ const handleAuthentication = async ({
 
     console.log("Login successfully")
 
-    location.reload()
-
-    return true
+    return { isAuthenticated: true }
   }
 }
 
 const onSubmit = async ({
   email,
   username,
+  requiresApproval,
 }: {
   email: string
+  requiresApproval: boolean
   username: string
 }): Promise<
-  | { success: true; isPending: boolean; isLoggedIn: boolean }
-  | { success: false; error: string }
+  | {
+      success: true
+      isEmailVerified?: boolean
+      isPending: boolean
+      isLoggedIn: boolean
+    }
+  | { success: false; error: string; errorFields: string[] }
 > => {
-  const registrationResult = await handleRegistration({ email, username })
+  const registrationResult = await handleRegistration({
+    email,
+    username,
+    registrationReason: requiresApproval
+      ? "Skipped by easy signup plugin"
+      : undefined,
+  })
 
   if (!registrationResult.success) {
-    return { success: false, error: registrationResult.error }
+    return {
+      success: false,
+      error: registrationResult.error,
+      errorFields: registrationResult.errorFields,
+    }
+  }
+
+  if (registrationResult.isPending) {
+    return {
+      success: true,
+      isPending: true,
+      isLoggedIn: false,
+    }
   }
 
   try {
@@ -244,7 +287,12 @@ const onSubmit = async ({
       password: registrationResult.password,
     })
 
-    return { success: true, isLoggedIn: authResult, isPending: false }
+    return {
+      success: true,
+      isEmailVerified: authResult.isEmailVerified !== false,
+      isLoggedIn: authResult.isAuthenticated,
+      isPending: false,
+    }
   } catch (err) {
     console.error(err)
 
@@ -259,6 +307,8 @@ const onSubmit = async ({
 export const buildForm = async (
   rootEl: HTMLElement,
   ptTranslate: (str: string) => Promise<string>,
+  showModal: RegisterClientHelpers["showModal"],
+  serverConfigProm: ReturnType<RegisterClientHelpers["getServerConfig"]>,
 ): Promise<void> => {
   translate = ptTranslate
   const uiBuilder = new UiBuilder(rootEl)
@@ -281,6 +331,9 @@ export const buildForm = async (
   inputUsername.setAttribute("required", "true")
   inputUsername.setAttribute("inputmode", "text")
   inputUsername.setAttribute("autocapitalize", "off")
+  inputUsername.setAttribute("pattern", USER_USERNAME_REGEX_CHARACTERS)
+  inputUsername.setAttribute("minlength", "1")
+  inputUsername.setAttribute("maxlength", "50")
 
   {
     const observer = new MutationObserver(() => {
@@ -299,7 +352,7 @@ export const buildForm = async (
 
   const form = uiBuilder.form([
     uiBuilder.div(
-      [...uiBuilder.label(await translate("Email"), inputEmail)],
+      uiBuilder.label(await translate("Email"), inputEmail),
       "form-group",
     ),
     uiBuilder.div([
@@ -311,6 +364,7 @@ export const buildForm = async (
         "form-group-description",
       ),
     ]),
+    uiBuilder.div([], "form-error"),
     uiBuilder.div(
       [
         uiBuilder.button(
@@ -326,24 +380,56 @@ export const buildForm = async (
     let isUsernameDirty = false
 
     inputEmail.addEventListener("input", () => {
-      if (isUsernameDirty) return
+      if (!isUsernameDirty) {
+        const [mailUsername] = inputEmail.value.split("@")
+        inputUsername.setAttribute("value", mailUsername)
+        inputUsername.value = mailUsername
+        inputUsername.checkValidity()
+      }
+    })
 
-      const [mailUsername] = inputEmail.value.split("@")
-      inputUsername.setAttribute("value", mailUsername)
+    const inputValidations: Array<[HTMLInputElement, string]> = [
+      [inputEmail, "Invalid email"],
+      [inputUsername, "Invalid username"],
+    ] as const
+
+    inputValidations.forEach(([inputElem]) => {
+      inputElem.addEventListener("keydown", () => {
+        inputElem.setCustomValidity("") // Reset server validation error
+      })
+
+      let isValid = true
+
+      inputElem.addEventListener("blur", () => {
+        if (isValid && !inputElem.checkValidity()) {
+          isValid = false
+          inputElem.reportValidity()
+        } else {
+          isValid = true
+        }
+      })
     })
 
     inputUsername.addEventListener("keydown", () => {
       isUsernameDirty = true
     })
 
-    inputUsername.addEventListener("input", () => {
-      const validate = new RegExp(`^${USER_USERNAME_REGEX_CHARACTERS}+$`).test(
-        inputUsername.value,
-      )
+    const showFormError = async (val?: string) => {
+      const errMsg = val ?? (await translate("An unexpected error occured"))
 
-      // TODO: Respond to ui
-      console.log({ validate })
-    })
+      const formErrEl = rootEl.querySelector(".form-error")
+
+      if (!formErrEl) {
+        console.error("easy-signup: Failed to find form-error element.")
+        alert(errMsg)
+
+        return
+      }
+
+      formErrEl.innerHTML = errMsg
+    }
+
+    const serverConfig = await serverConfigProm
 
     form.addEventListener("submit", (event) => {
       event.preventDefault()
@@ -351,19 +437,78 @@ export const buildForm = async (
       onSubmit({
         email: inputEmail.value,
         username: inputUsername.value,
-      }).catch((err: unknown) => {
-        console.error(err)
+        requiresApproval: serverConfig.signup.requiresApproval as boolean,
       })
+        .then(async (result) => {
+          if (result.success) {
+            if (!result.isEmailVerified) {
+              showModal({
+                title: await translate("Your account is created"),
+                content: await translate(
+                  "Check your email inbox in order to verify your email address.",
+                ),
+                close: true,
+              })
+            }
+
+            if (result.isPending) {
+              showModal({
+                title: await translate("Your account request is sent"),
+                content: await translate(
+                  "A moderator will review your registration, you'll get an email when it's ready to use.",
+                ),
+                close: true,
+              })
+              return
+            }
+
+            if (result.isLoggedIn) {
+              location.reload()
+              return
+            } else {
+              showModal({
+                title: await translate("Failed to login"),
+                content: await translate(
+                  "Your account is created but we failed to login to your account. Try to reset your password.",
+                ),
+                close: true,
+              })
+              return
+            }
+          }
+
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (result.errorFields?.length) {
+            if (result.errorFields.includes("email")) {
+              inputEmail.setCustomValidity(await translate("Invalid email"))
+              inputEmail.reportValidity()
+            }
+
+            if (result.errorFields.includes("username")) {
+              inputUsername.setCustomValidity(
+                await translate("Invalid username"),
+              )
+              inputUsername.reportValidity()
+            }
+
+            return
+          }
+
+          await showFormError(result.error)
+        })
+        .catch((err: unknown) => {
+          console.error(err)
+          void showFormError()
+        })
     })
   }
 
   rootEl.appendChild(
     uiBuilder.div(
       [
-        uiBuilder.h2(await translate("Create account")),
+        uiBuilder.h2(await translate("Create account"), "mb-5"),
         uiBuilder.div(
           [
-            uiBuilder.div([form], "col-12 col-md-6"),
             uiBuilder.div(
               [
                 uiBuilder.p(
@@ -379,10 +524,11 @@ export const buildForm = async (
                   ),
                 ]),
               ],
-              "col-12 col-md-6",
+              "col-12 col-md-6 gx-6",
             ),
+            uiBuilder.div([form], "col-12 col-md-6 gx-6"),
           ],
-          "row",
+          "row row-reverse",
         ),
       ],
       "",

@@ -11,6 +11,8 @@ function register({
     navigateByUrl: (url: string) => void
   }
 }): void {
+  const serverConfig = peertubeHelpers.getServerConfig()
+
   registerClientRoute({
     route: "/easy-signup",
     onMount: ({ rootEl }) => {
@@ -18,7 +20,12 @@ function register({
         router.navigateByUrl("/")
       }
 
-      buildForm(rootEl, peertubeHelpers.translate).catch((err: unknown) => {
+      buildForm(
+        rootEl,
+        peertubeHelpers.translate,
+        peertubeHelpers.showModal,
+        serverConfig,
+      ).catch((err: unknown) => {
         console.error(err)
       })
     },

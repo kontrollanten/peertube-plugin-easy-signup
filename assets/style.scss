@@ -11,8 +11,25 @@
     border-radius: var(--input-border-radius);
   }
 
+  .form-error {
+    &::after {
+      content: '\00a0';
+    }
+
+    margin-bottom: 1rem;
+  }
+
+
+  input:user-invalid {
+    border-color: var(--red) !important;
+  }
+
   h2,
   .text-center {
     text-align: center;
+  }
+
+  .row-reverse {
+    flex-direction: row-reverse;
   }
 }

@@ -42,9 +42,13 @@ export class UiBuilder {
     return elem
   }
 
-  h2(innerText: string): HTMLElement {
+  h2(innerText: string, className?: string): HTMLElement {
     const elem = document.createElement("h2")
     elem.innerText = innerText
+
+    if (className) {
+      elem.classList.add(className)
+    }
 
     return elem
   }

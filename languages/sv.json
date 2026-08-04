@@ -10,5 +10,14 @@
   "With an account you'll be able to:": "Med ett konto har du möjlighet att:",
   "Comment on videos.": "Kommentera på program.",
   "Become premium member to watch premium videos.": "Bli medlem och se medlemsprogram.",
-  "Subscribe and get notification when new videos are published.": "Prenumerera och få notifikationer när nya program publiceras."
+  "Subscribe and get notification when new videos are published.": "Prenumerera och få notifikationer när nya program publiceras.",
+  "Invalid email": "Ogiltig e-postadress",
+  "Invalid username": "Ogiltigt användarnamn",
+  "Your account is created": "Ditt konto är skapat",
+  "Check your email inbox in order to verify your email address.": "Kolla din inkorg för att verifiera ditt konto.",
+  "Your account request is sent": "Din kontoansökan är skickad",
+  "A moderator will review your registration, you'll get an email when it's ready to use.": "En moderatör kommer gå igenom din ansökan, du kommer få ett mejl när ditt konto är redo att användas.",
+  "Failed to login": "Misslyckades att logga in",
+  "Your account is created but we failed to login to your account. Try to reset your password.": "Ditt konto skapades, men inloggningen misslyckades. Försök att återställa ditt lösenord och logga in igen.",
+  "An unexpected error occured": "Ett oväntat fel inträffade"
 }
