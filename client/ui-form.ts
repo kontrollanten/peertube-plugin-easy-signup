@@ -441,13 +441,19 @@ export const buildForm = async (
         .then(async (result) => {
           if (result.success) {
             if (!result.isEmailVerified) {
-              showModal({
-                title: await translate("Your account is created"),
-                content: await translate(
-                  "Check your email inbox in order to verify your email address.",
-                ),
-                close: true,
-              })
+              rootEl.innerHTML = ""
+              rootEl.appendChild(
+                uiBuilder.div([
+                  uiBuilder.h2(await translate("Your account is created")),
+                  uiBuilder.p(
+                    await translate(
+                      "Check your email inbox in order to verify your email address.",
+                    ),
+                  ),
+                ]),
+              )
+
+              return
             }
 
             if (result.isPending) {
