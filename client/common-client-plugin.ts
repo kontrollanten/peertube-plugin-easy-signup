@@ -20,6 +20,12 @@ function register({
         router.navigateByUrl("/")
       }
 
+      try {
+        localStorage.setItem("no_account_setup_warning_modal", "true")
+      } catch (err) {
+        console.error("Failed to set localstorage", err)
+      }
+
       buildForm(
         rootEl,
         peertubeHelpers.translate,
