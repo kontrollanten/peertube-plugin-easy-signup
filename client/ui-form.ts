@@ -39,14 +39,15 @@ void (async () => {
 })()
 
 function generatePwd(length: number): string {
-  let result = ""
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-  const { length: charactersLength } = characters
+  const characters = "ABCDEFGHiJKLMNOPQRSTUVWXYZ"
+  const numbers = "0123456789"
 
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
+  let result = characters.charAt(Math.floor(Math.random() * characters.length))
+
+  for (let i = 1; i < length; i++) {
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length))
   }
+
   return result
 }
 
@@ -92,7 +93,7 @@ const handleRegistration = async ({
   | { success: true; isPending: boolean; password: string }
   | { success: false; errorFields: string[]; error: string }
 > => {
-  const password = generatePwd(15)
+  const password = generatePwd(9)
 
   const response = await fetch("/api/v1/users/register", {
     method: "post",
