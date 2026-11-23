@@ -1,10 +1,30 @@
 .peertube-plugin-easy-signup {
   justify-self: center;
 
+  .bold {
+    font-weight: bold;
+  }
+
+  .form-group {
+    &.checkbox {
+      display: flex;
+      flex-direction: row-reverse;
+
+      label {
+        flex-grow: 1;
+        padding-left: 15px;
+        margin-bottom: 0;
+      }
+    }
+  }
+
   input:not([type=submit]) {
-    padding: var(--input-y-padding) var(--input-x-padding);
-    width: 100%;
-    max-width: 100%;
+    &:not([type=checkbox]) {
+      padding: var(--input-y-padding) var(--input-x-padding);
+      width: 100%;
+      max-width: 100%;
+    }
+
     color: var(--input-fg);
     background-color: var(--input-bg);
     border: var(--input-border-width) solid var(--input-border-color);

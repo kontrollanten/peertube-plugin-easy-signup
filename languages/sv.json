@@ -19,5 +19,7 @@
   "A moderator will review your registration, you'll get an email when it's ready to use.": "En moderatör kommer gå igenom din ansökan, du kommer få ett mejl när ditt konto är redo att användas.",
   "Failed to login": "Misslyckades att logga in",
   "Your account is created but we failed to login to your account. Try to reset your password.": "Ditt konto skapades, men inloggningen misslyckades. Försök att återställa ditt lösenord och logga in igen.",
-  "An unexpected error occured": "Ett oväntat fel inträffade"
+  "An unexpected error occured": "Ett oväntat fel inträffade",
+  "Terms of use": "Användarvillkor",
+  "I accept the terms": "Jag accepterar användarvillkoren"
 }

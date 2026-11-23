@@ -116,10 +116,16 @@ export class UiBuilder {
     return [label, inputElement]
   }
 
-  input(type: "text" | "email", placeholder: string): HTMLInputElement {
+  input(
+    type: "text" | "email" | "checkbox",
+    placeholder?: string,
+  ): HTMLInputElement {
     const input = document.createElement("input")
     input.setAttribute("type", type)
-    input.setAttribute("placeholder", placeholder)
+
+    if (placeholder) {
+      input.setAttribute("placeholder", placeholder)
+    }
 
     return input
   }

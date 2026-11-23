@@ -337,6 +337,12 @@ export const buildForm = async (
   inputUsername.setAttribute("minlength", "1")
   inputUsername.setAttribute("maxlength", "50")
 
+  const aboutData = await fetch('/api/v1/config/about').then(res => res.json())
+  const termsOfUse = aboutData?.instance?.terms
+
+  const inputVerifyTerms = uiBuilder.input("checkbox")
+  inputVerifyTerms.setAttribute("required", "true")
+
   {
     const observer = new MutationObserver(() => {
       if (rootEl.contains(inputEmail)) {
@@ -366,6 +372,15 @@ export const buildForm = async (
         "form-group-description",
       ),
     ]),
+    uiBuilder.div(
+      [
+        ...uiBuilder.label(
+          await translate("I accept the terms"),
+          inputVerifyTerms,
+        ),
+      ],
+      "form-group checkbox",
+    ),
     uiBuilder.div([], "form-error"),
     uiBuilder.div(
       [
@@ -527,7 +542,7 @@ export const buildForm = async (
             uiBuilder.div(
               [
                 uiBuilder.p(
-                  await translate("With an account you'll be able to:"),
+                  await translate("With an account you'll be able to:"), "bold"
                 ),
                 uiBuilder.ul(
                   [
@@ -543,6 +558,10 @@ export const buildForm = async (
                     ),
                   ].filter((l) => !!l) as string[],
                 ),
+                uiBuilder.p(
+                  await translate("Terms of use"), "bold"
+                ),
+                uiBuilder.p(termsOfUse),
               ],
               "col-12 col-md-6 gx-6",
             ),
